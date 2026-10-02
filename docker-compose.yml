@@ -1,0 +1,14 @@
+version: "2.4"
+
+services:
+  server:
+    container_name: trueconf-server
+    image: ${TC_IMAGE_TAG}
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "4307:4307"
+    environment:
+      - ADMIN_USER=tc_admin
+      - ADMIN_PASSWORD='change-me'

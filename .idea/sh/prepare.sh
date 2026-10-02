@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Interactively pick a tag for trueconf/trueconf-server from Docker Hub.
 # Prints the chosen tag to stdout; everything else goes to stderr.
 set -euo pipefail
