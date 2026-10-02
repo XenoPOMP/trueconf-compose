@@ -119,3 +119,5 @@ Temporary Items
 /dest
 /data
 !/data/.gitkeep
+/.idea/release/*
+!/.idea/release/.gitkeep
