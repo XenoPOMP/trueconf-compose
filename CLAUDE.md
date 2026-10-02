@@ -30,6 +30,9 @@ to a server that has **no internet access** and run `install.sh` there.
   configurations under `.idea/runConfigurations/`.
 - `.idea/release/` — output folder for packaged release archives. Gitignored
   except `.gitkeep` (archives are large binaries and shouldn't be committed).
+- `guides/` — standalone operational docs, e.g. `MIGRATIION_GUIDE_WINDOWS.md`
+  (migrating a Windows TrueConf Server install to this Docker setup via a
+  `pg_dumpall` dump).
 
 ## Scripts (`.idea/sh/`)
 
