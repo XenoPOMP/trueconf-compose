@@ -47,4 +47,4 @@ done
 
 step "Starting server"
 docker-compose up -d
-ok "Server is running"
+ok "Server is starting. Inspect with docker logs -f trueconf-server"
