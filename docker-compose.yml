@@ -12,5 +12,6 @@ services:
     environment:
       - ADMIN_USER=${ADMIN_LOGIN:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-trueconf}
+      - DUMP_PATH=/opt/trueconf/server/var/lib/dump
     volumes:
       - ./data:/opt/trueconf/server/var/lib

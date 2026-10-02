@@ -45,6 +45,45 @@ for image in $(find $(pwd)/images -maxdepth 1 -type f -name "*.tar"); do
   printf '%sdone%s\n' "$GREEN" "$OFF"
 done
 
+DUMP_DIR="data/dump"
+DUMP_FILE="$DUMP_DIR/tcs_db.dump"
+APPLY_DUMP=false
+mkdir -p "$DUMP_DIR"
+
+step "Checking for dump to import"
+CANDIDATES=$(find "$DUMP_DIR" -maxdepth 1 -type f ! -name ".gitkeep" 2>/dev/null)
+if [[ -z "$CANDIDATES" ]]; then
+  info "No dump file found in $DUMP_DIR, skipping import"
+elif [[ -d data/database ]]; then
+  warn "Dump file found in $DUMP_DIR, but data/database already exists — this is not a fresh install"
+  warn "The dump will NOT be applied. Run .idea/sh/clear-data.sh first if you want to reinitialize from it"
+elif [[ $(wc -l <<<"$CANDIDATES") -gt 1 ]]; then
+  fail "Multiple files found in $DUMP_DIR. Leave only the single dump file (a pg_dumpall export) there"
+  exit 1
+else
+  mv -f "$CANDIDATES" "$DUMP_FILE"
+  APPLY_DUMP=true
+  ok "Found dump to import: $(basename "$CANDIDATES")"
+fi
+
 step "Starting server"
 docker-compose up -d
 ok "Server is starting. Inspect with docker logs -f trueconf-server"
+
+if [[ "$APPLY_DUMP" == true ]]; then
+  step "Importing dump"
+  info "Waiting for first-boot setup (dump import + schema patches) to finish..."
+  WAITED=0
+  until docker exec trueconf-server pgrep supervisord >/dev/null 2>&1; do
+    sleep 2
+    WAITED=$((WAITED + 2))
+    if [[ $WAITED -ge 300 ]]; then
+      fail "Timed out waiting for setup to finish. Check: docker logs trueconf-server"
+      exit 1
+    fi
+  done
+  docker exec trueconf-server sh -c 'tail -n 40 /opt/trueconf/server/var/log/database/tcs_db_dump-*.log' 2>/dev/null || \
+    warn "No dump import log found — check docker logs trueconf-server"
+  rm -f "$DUMP_FILE"
+  ok "Dump imported and cleared from $DUMP_DIR"
+fi
