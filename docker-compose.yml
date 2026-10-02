@@ -10,5 +10,7 @@ services:
       - "8443:443"
       - "4307:4307"
     environment:
-      - ADMIN_USER=tc_admin
-      - ADMIN_PASSWORD='change-me'
+      - ADMIN_USER=${ADMIN_LOGIN:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-trueconf}
+    volumes:
+      - ./data:/opt/trueconf/server/var/lib
