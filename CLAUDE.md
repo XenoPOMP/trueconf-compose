@@ -7,13 +7,12 @@ to a server that has **no internet access** and run `install.sh` there.
 ## Layout
 
 - `docker-compose.yml` — single `server` service running the TrueConf Server
-  image. Binds ports 80/443/4307 to `${PRIMARY_INTERFACE}` and mounts `./data`
+  image. Uses `network_mode: host` (see "Known quirks") and mounts `./data`
   into the container at `/opt/trueconf/server/var/lib`.
 - `.env` / `.env.example` — runtime config (gitignored except the example):
   - `TC_IMAGE_TAG` — full image ref (`trueconf/trueconf-server:<tag>`), written
     automatically by `prepare.sh`.
   - `ADMIN_USER`, `ADMIN_PASSWORD` — admin credentials.
-  - `PRIMARY_INTERFACE` — host interface/IP to bind the published ports to.
 - `install.sh` — run on the **target** server. Idempotent install/upgrade:
   bootstraps Docker/docker-compose from `docker-deps/*.deb` if missing,
   stops existing containers, removes old `trueconf*` images, loads
@@ -75,6 +74,14 @@ to a server that has **no internet access** and run `install.sh` there.
   defines `ADMIN_USER` instead of `ADMIN_LOGIN`. As written, the admin login
   always falls back to the default `admin` — `.env`'s `ADMIN_USER` value is
   not actually wired through. Only `ADMIN_PASSWORD` is correctly picked up.
-- `.env.example` defaults `PRIMARY_INTERFACE` to `127.0.0.1`; the real `.env`
-  in this checkout uses `0.0.0.0` — double check this before shipping a
-  release, since it controls which interface the server is exposed on.
+- `docker-compose.yml` uses `network_mode: host` instead of publishing
+  individual ports — TrueConf's realtime media (WebRTC/RTP) needs a wide,
+  effectively dynamic UDP port range beyond 80/443/4307, which isn't
+  practical to enumerate with Docker's `ports:` mapping. The tradeoff: the
+  container now shares the host's network namespace directly, so there's no
+  compose-level way to restrict it to one interface (`PRIMARY_INTERFACE` no
+  longer exists/applies) — any interface restriction has to happen via the
+  host firewall or the application's own bind-address config, if it has one.
+  `network_mode: host` is Linux-only, which is fine for the Debian 12
+  target but means this compose file won't run the same way under Docker
+  Desktop on macOS/Windows.
