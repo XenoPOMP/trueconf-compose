@@ -18,6 +18,15 @@ need curl "brew install curl"
 need jq "brew install jq"
 need fzf "brew install fzf"
 
+check_internet() {
+  if ! curl -fsS --max-time 5 -o /dev/null "https://hub.docker.com"; then
+    echo "Error: no internet connection (could not reach hub.docker.com)" >&2
+    exit 1
+  fi
+}
+
+check_internet
+
 fetch_tags() {
   local url="${API_BASE}?page_size=${PAGE_SIZE}&ordering=last_updated"
   local response
