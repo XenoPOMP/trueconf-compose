@@ -71,4 +71,7 @@ docker pull $PULL_IMAGE --platform linux/amd64
 docker save -o images/trueconf.tar $PULL_IMAGE
 echo "Image saved to images/trueconf.tar"
 
+echo "TC_IMAGE_TAG=$PULL_IMAGE" | tee .env
+echo "Updated .env file"
+
 echo "All tasks completed successfully."
