@@ -17,7 +17,11 @@ step "Preparing image and .env"
 "$SCRIPT_DIR/prepare.sh"
 ok "Prepare step finished"
 
-ITEMS=(images .env docker-compose.yml install.sh)
+step "Preparing Docker .deb packages"
+"$SCRIPT_DIR/prepare-docker-deps.sh"
+ok "Docker .deb packages ready"
+
+ITEMS=(images docker-deps .env docker-compose.yml install.sh)
 for item in "${ITEMS[@]}"; do
   if [[ ! -e "$item" ]]; then
     fail "Missing '$item', cannot build release archive"

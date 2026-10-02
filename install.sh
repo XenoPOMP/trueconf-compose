@@ -16,6 +16,21 @@ compose() {
   docker-compose $@
 }
 
+step "Checking for Docker and docker-compose"
+if command -v docker >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
+  ok "Docker and docker-compose already installed"
+else
+  if [[ -d docker-deps ]] && ls docker-deps/*.deb >/dev/null 2>&1; then
+    info "Installing Docker and docker-compose from docker-deps/*.deb"
+    apt-get install -y ./docker-deps/*.deb
+    systemctl enable --now docker >/dev/null 2>&1 || true
+    ok "Docker and docker-compose installed"
+  else
+    fail "Docker/docker-compose not found and no docker-deps/*.deb bundle available. Aborting installation"
+    exit 1
+  fi
+fi
+
 step "Checking for image existence"
 if [[ ! -f images/trueconf.tar || "$(cat .env | grep TC_IMAGE_TAG)" == "" ]]; then
   fail "Missing image metadata (trueconf.tar or .env TC_IMAGE_TAG field). Aborting installation"
