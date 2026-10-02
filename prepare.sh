@@ -62,3 +62,13 @@ fi
 
 PULL_IMAGE="$IMAGE:$TAG"
 echo "Selected image tag: $PULL_IMAGE"
+
+echo "Clearing images folder"
+rm -f images/*.tar
+
+echo "Pulling down image..."
+docker pull $PULL_IMAGE --platform linux/amd64
+docker save -o images/trueconf.tar $PULL_IMAGE
+echo "Image saved to images/trueconf.tar"
+
+echo "All tasks completed successfully."
