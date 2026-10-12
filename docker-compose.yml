@@ -6,6 +6,10 @@ services:
     image: ${TC_IMAGE_TAG}
     restart: unless-stopped
     network_mode: host
+    # Astra Linux 1.7 requires CAP_SYS_ADMIN for the entrypoint's
+    # `setcap` on tc_server (SETFCAP alone is not enough there).
+    cap_add:
+      - SYS_ADMIN
     environment:
       - ADMIN_USER=${ADMIN_LOGIN:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-trueconf}

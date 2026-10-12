@@ -73,6 +73,14 @@ to a server that has **no internet access** and run `install.sh` there.
 
 ## Known quirks
 
+- `docker-compose.yml` adds `cap_add: SYS_ADMIN`. On Astra Linux 1.7.6
+  (kernel 6.1 in VM, 5.15 on host; docker 20.10, compose 1.29.1) the image's
+  entrypoint `setcap` on `/opt/trueconf/server/bin/vcs/tc_server` fails with
+  `Operation not permitted`, which crash-loops the container (exit code 1).
+  Verified by test: `SETFCAP`, `SYS_NICE`, `NET_ADMIN`, and unconfined
+  seccomp/apparmor all still fail; only `SYS_ADMIN` (or `ALL`/`--privileged`)
+  makes `setcap` work. Plain Debian hosts don't need it.
+
 - `docker-compose.yml` sources the container's `ADMIN_USER` env var from the
   host env var `ADMIN_LOGIN` (`ADMIN_USER=${ADMIN_LOGIN:-admin}`), but `.env`
   defines `ADMIN_USER` instead of `ADMIN_LOGIN`. As written, the admin login
