@@ -6,10 +6,15 @@ services:
     image: ${TC_IMAGE_TAG}
     restart: unless-stopped
     network_mode: host
-    # Astra Linux 1.7 requires CAP_SYS_ADMIN for the entrypoint's
-    # `setcap` on tc_server (SETFCAP alone is not enough there).
+    # Astra Linux 1.7 (docker 20.10.2) workarounds, see CLAUDE.md "Known quirks":
+    # - SYS_ADMIN: the entrypoint's `setcap` on tc_server/httpd/apachectl
+    #   fails with EPERM without it (SETFCAP alone is not enough).
+    # - seccomp:unconfined: the old default seccomp profile makes initdb's
+    #   `postgres -V` fail with "Cannot allocate memory" on first boot.
     cap_add:
       - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
     environment:
       - ADMIN_USER=${ADMIN_LOGIN:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-trueconf}

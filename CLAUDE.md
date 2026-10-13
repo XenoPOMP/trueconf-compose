@@ -79,7 +79,24 @@ to a server that has **no internet access** and run `install.sh` there.
   `Operation not permitted`, which crash-loops the container (exit code 1).
   Verified by test: `SETFCAP`, `SYS_NICE`, `NET_ADMIN`, and unconfined
   seccomp/apparmor all still fail; only `SYS_ADMIN` (or `ALL`/`--privileged`)
-  makes `setcap` work. Plain Debian hosts don't need it.
+  makes `setcap` work. Plain Debian hosts don't need it. The same applies
+  to all three `setcap` calls at the end of the image's `/root/setup.sh`
+  (`tc_server`, `httpd`, `apachectl`). `setup.sh` runs under `set -e` and
+  deletes itself only after they succeed, so a failure re-runs it on every
+  restart.
+- `docker-compose.yml` also sets `security_opt: seccomp:unconfined`. On the
+  same Astra host (docker 20.10.2+dfsg1) first-boot `initdb` fails with
+  `could not execute command ".../postgres" -V: Cannot allocate memory`
+  (not a real RAM problem — RAM, overcommit and ulimits were fine). Verified
+  by test: it passes with `seccomp=unconfined` or `--privileged`, and fails
+  with default seccomp, `SYS_ADMIN`, or host networking. Probably the old
+  default seccomp profile vs. the image's newer glibc; a newer Docker
+  (>= 20.10.10) may remove the need, but this is untested.
+- `database-init-localhost` (in the image) only runs `initdb` when
+  `data/database` does not exist. A failed first boot leaves an empty
+  `data/database` dir, so retries skip `initdb` and `pg_ctl` fails with
+  "not a database cluster directory". After any failed first boot, run
+  `.idea/sh/clear-data.sh` before retrying (or set `INIT_DB=1`).
 
 - `docker-compose.yml` sources the container's `ADMIN_USER` env var from the
   host env var `ADMIN_LOGIN` (`ADMIN_USER=${ADMIN_LOGIN:-admin}`), but `.env`
