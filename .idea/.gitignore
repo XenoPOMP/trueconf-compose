@@ -10,4 +10,5 @@
 /dataSources.local.xml
 
 # Project-related
+!/scratches/invoice-context.md
 /scratches
