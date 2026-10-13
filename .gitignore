@@ -123,3 +123,7 @@ Temporary Items
 !/data/.gitkeep
 /.idea/release/*
 !/.idea/release/.gitkeep
+
+# Generated from guides/*.md by the local guide-docx hook; never committed
+/guides/*.docx
+/guides/*.tmp.*
